@@ -1,0 +1,9 @@
+/.vs
+/Intermediate
+/Saved
+/Plugins
+*.sln
+*_BuiltData.uasset
+/Binaries
+/Pack
+/Content/Assets
