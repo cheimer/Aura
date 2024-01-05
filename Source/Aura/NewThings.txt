@@ -1,0 +1,8 @@
+﻿EnhancedInput
+AD의 X축이 기본값 WD로 바꾸려면 스위즐 입력 축값을 추가한 후 YXZ로 바꿔서 Y를 우선받게함
+
+Interface
+상속을 통해 사용되며 이를 이용해서 클래스간의 종속성을 줄일 수 있음
+예를 들어 Controller에서 AAA 클래스의 특정 행동이 필요할 떄 직접적으로 호출하면 Controller와 AAA간의 종속성이 생김
+따라서 AAA가 IAAAAction인터페이스를 상속한 후 Controller에서 IAAAAction을 호출하게 함
+IAAAACtion에는 virtual void AAADoSomething() = 0; 같은 순수가상함수를 선언함
