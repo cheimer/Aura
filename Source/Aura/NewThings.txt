@@ -6,3 +6,51 @@ Interface
 예를 들어 Controller에서 AAA 클래스의 특정 행동이 필요할 떄 직접적으로 호출하면 Controller와 AAA간의 종속성이 생김
 따라서 AAA가 IAAAAction인터페이스를 상속한 후 Controller에서 IAAAAction을 호출하게 함
 IAAAACtion에는 virtual void AAADoSomething() = 0; 같은 순수가상함수를 선언함
+
+PostProcess
+랜더링 후에 처리하는 랜더링으로 덮어쓰는 느낌으로 생각하면 될듯
+월드에서 PostProcessVolume을 생성한 후 필요에 따라 크기를 설정하거나 전체에 설정할 때는 무한 규모를 체크하면 됨
+그리고 PostProcessMaterial에서 해당하는 머티리얼을 지정함
+이 프로젝트의 경우 프로젝트 세팅 - customdepth - enabled with stencil로 변경한 후 
+GetMesh()->SetRenderCustomDepth(true);
+GetMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_INT);
+로 설정했음 위는 외곽선을 그리는데 주로 사용한다고 적힌 옵션이며 밑의 값은 PostProcessMaterial에서 설정한 머티리얼의 값임
+
+PlayerState
+Player에 대한 정보를 입력할 때 사용함. 장점은 Player가 사라지는 등의 상황에서도 값을 따로 처리안해도됨 단점은 간단한 Player를 만들 때도 복잡해짐
+Player에 바로 입력하는 경우는 구현이 간단해짐
+
+서버 - 클라이언트
+server - Gamemode, 모든 컨트롤러, 모든 플레이어 스테이트,              값의 변경을 복제하여 알림
+client -           자신 컨트롤러, 모든 플레이어 스테이트, 자신 HUD/위젯, 값의 변경을 알리지 못함
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+AbilitySystemComponent
+
+SetReplicationMode()
+Full - Single
+Mixed - Multi, PlayerControlled  // OwnerActor가 PlayerState가 아니라면 SetOwner로 Controller에 설정해줘야함
+Minimal - Multi, AIControlled
+
+OwnerActor - 소유하고있는 액터, AvatarActor - 월드에서 보이고 있는 액터
+InitAbilityActorInfo로 각각 설정해주어야하며 설정하는 위치는 다음과 같음
+PlayerControlled(Owner == Avatar): Server - PossessedBy, Client - AcknowledgePossession / 빙의했을 때 값을 입력해줌
+PlayerControlled(Owner != Avatar): Server - PossessedBy, Client - OnRep_PlayerState     / 빙의했을 때, 그리고 PlayerState에서 값을 복사할 때 입력함
+AIControlled:                      Server, Client - BeginPlay
+
+AttributeSet
+
+값을 저장하는 PlayerState와 비슷한 느낌이지만 Multiplay에 최적화되어있음
+BaseValue, CurrentValue로 나누어서 저장함. 그런 후 값이 바뀌면 서버가 응답할 때까지 CurrentValue에 저장하고 사용함. 그런 후에 응답에 따라 BaseValue의 값을 바꿀지 정함
+
+값은 FGameplayAttributeData에 저장하며 float으로 정해짐. 또한 값을 저장하는 순서가 있는데
+UPROPERTY(ReplicatedUsing = OnRep_Examp) FGameplayAttributeData Examp;
+UFUNCTION() void OnRep_Examp(const FGameplayAttributeData& OldExamp) const;
+
+void OnRep_Examp(~~Data& OldExamp) const 
+{ GAMEPLAYATTRIBUTE_REPNOTIFY(UExampAttributeSet, Examp, OldExamp); }
+void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) // override한 함수
+{ Super::~~; DOREPLIFETIME_CONDITION_NOTIFY(UExampAttributeSet, Examp, COND_None, REPNOTIFY_Change); }
+
+
