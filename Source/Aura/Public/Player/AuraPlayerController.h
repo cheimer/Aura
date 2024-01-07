@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerController.h"
 #include "AuraPlayerController.generated.h"
 
+class IEnemyInterface;
+
 /**
  * 
  */
@@ -34,6 +36,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<class UInputAction> MoveAction;
 
-	class IEnemyInterface* LastActor;
-	class IEnemyInterface* ThisActor;
+	TObjectPtr<IEnemyInterface> LastActor;
+	IEnemyInterface* ThisActor;
 };

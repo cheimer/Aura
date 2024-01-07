@@ -54,3 +54,10 @@ void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) // 
 { Super::~~; DOREPLIFETIME_CONDITION_NOTIFY(UExampAttributeSet, Examp, COND_None, REPNOTIFY_Change); }
 
 
+-------------------------------------------------------------------------------------------------------------------------------------------
+Widget Controller
+Object에서 상속받아 만든 클래스로 Widget에서 생성하며 PlayerController, PlayerState, AbilitySystemComponent, AttributeSet을 변수로 가짐
+그 후 필요한 기능을 구현하는 자식 클래스를 만들어서 구현함
+바인딩은 AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+		    AttributeSet->GetHealthAttribute()).AddUObject(this, &UWidgetController::HealthChanged); //TODO: 나중에 변경할 가능성이 있음. GamePlay Effect
+처럼 하며 이를 통해   AttributeSet->GetHealthAttribute()로 가져온 값이 변할 때 HealthChanged가 실행되게 설정할 수 있음
