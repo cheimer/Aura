@@ -53,6 +53,27 @@ void OnRep_Examp(~~Data& OldExamp) const
 void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) // override한 함수
 { Super::~~; DOREPLIFETIME_CONDITION_NOTIFY(UExampAttributeSet, Examp, COND_None, REPNOTIFY_Change); }
 
+PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)를 상속받아서 값이 변하기 전에 설정가능함 -> Clamp로 범위 설정만 하고 로직 등은 X
+PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)를 사용해서 값이 변할 때의 값을 Data에서 받아 사용할 수 있음
+Source, Target 모두 받을 수 있으며 AvatarActor, Controller, Character, AbilitySystemComponent등을 가져올 수 있음
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+GameplayEffect
+AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(FGameplayEffectSpec)를 통해 설정하며 FGameplayEffectSpec은
+FGameplayEffectSpecHandle ~~ = AbilitySystemComponent->MakeOutgoingSpec(GameplayEffectClass, (float)Level, EffectContextHandle)로 가져오며
+FGameplayEffectContextHandle EffectContextHandle = AbilitySystemComponent->MakeEffectContext() 가 필요함
+EffectContextHandle.AddSourceObject(this)를 해서 설정해주면
+AbilitySystemComponent에 대해 GameplayEffectClass를 적용할 수 있게 됨. GameplayEffectClass은 TSubclassOf<UGameplayEffect>로 BP로 설정함
+ApplyGameplayEffectSpecToSelf의 반환값인 FActiveGameplayEffectHandle를 이용해서 필요할 때 사용할 수 있음
+예를 들어 Infinite의 경우 따로 삭제하지않으면 계속 유지되기 때문에 EndOverlap에서 해당 값을 받아서 필요하면 삭제해야함
+
+BP_GameplayEffect
+상속을 사용하지 않고 사용하며 GameplayEffect - Instance, Infinite, Duration을 선택할 수 있음
+Instance는 바로 적용되는 값이며 Infinite, Duration은 지속적인 값으로 만약 Period가 0이라면 해당 액터가 사라지면 값이 이전 값으로 초기화됨
+Period는 Tick과 비슷하게 주기이며 0.1일 경우 0.1초마다 값을 적용함 Duration은 지속시간을 설정가능함
+Modifiers를 통해 값을 설정하며 커브 테이블을 통해 값을 설정할 수 있음
+
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 Widget Controller
@@ -61,3 +82,10 @@ Object에서 상속받아 만든 클래스로 Widget에서 생성하며 PlayerCo
 바인딩은 AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 		    AttributeSet->GetHealthAttribute()).AddUObject(this, &UWidgetController::HealthChanged); //TODO: 나중에 변경할 가능성이 있음. GamePlay Effect
 처럼 하며 이를 통해   AttributeSet->GetHealthAttribute()로 가져온 값이 변할 때 HealthChanged가 실행되게 설정할 수 있음
+
+BeginOverlap, EndOverlap
+C++에서 OnOverlap, EndOverlap등으로 해당하는 기능을 구현한 후 블루프린터에서 이벤트를 바인딩함.
+블루프린터에서 Collision을 생성하거나 할 경우 유용하게 사용 가능.
+또한 Enum으로 여러 상황에 대한 변수를 두어서 그 변수에 따라 어떤 방식으로 구현할 지, if문으로 구성함
+
+
