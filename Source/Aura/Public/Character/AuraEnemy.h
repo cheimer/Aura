@@ -20,12 +20,12 @@ public:
 
 	// Begin IEnemyInterface
 	virtual void HighlightActor() override;
-
-	
 	virtual void UnHighlightActor() override;
 	// End IEnemyInterface
 
 protected:
 	virtual void BeginPlay() override;
-	
+
+	virtual void InitAbilityActorInfo() override;
+
 };
