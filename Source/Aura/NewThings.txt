@@ -113,3 +113,28 @@ GameplayTag
 또한 GameplayEffect에서 Stack이 가능한 경우 Tag가 중첩되어 쌓이지 않지만 Stack이 없으면 중첩이 가능함
 GameplayTag를 이용해서 어떤 Tag가 추가 될 경우에 대한 Delegate를 하는 등이 가능함
 
+C++에서 static을 이용해서 값을 설정할 수 있으며 static FMyGameplayTags GameplayTags로 선언했다면
+GameplayTags.GameplayTagSomething = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("AAA.BBB.CCC"), FString("Desc")); 으로 추가할 수 음
+
+AbilitySystemComponent, AttributeSet은 주로 코드에서 사용. GameplayEffect, GameplayTag는 에디터에서 사용함
+
+둘을 이어주기위해 AttribueSet에서 TMap<FGameplayTag, FuncPtr<FGameplayAttribute>>를 했으며 자세한 내용은 이해가 안됨...
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+AssetManager
+게임에 하나만 존재하는 클래스로 기본값을 바꾸려면 Config/DefaultEnegine.ini파일에서
+[/Script/Engine.Engine]밑에 AssetManagerClassName=/Script/ProjectName.MyAssetManager 을 추가하면됨
+StartInitialLoading()을 override해서 엔진의 기본 시작 값을 설정하는 등을 할 수 있음
+이 프로젝트에서는 GameplayTag의 값을 추가함
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+DataAsset
+값을 저장해 보기위한 에디터 에셋. 코드에서 상속받아서 간단한 검색 기능등을 추가할 수 있음.
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+BlueprintFunctionLibrary
+BP에서 사용하기 위한 Library로 이를 상속받아 UFUNCTION() static 으로 구현하면 모든 블루프린트에서 사용가능한 함수가 만들어짐
+단 static이기에 매개변수로 UObject* WorldContextObject를 사용해야할 수도 있음
