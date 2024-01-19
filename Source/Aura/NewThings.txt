@@ -21,12 +21,26 @@ Player에 대한 정보를 입력할 때 사용함. 장점은 Player가 사라�
 Player에 바로 입력하는 경우는 구현이 간단해짐
 
 서버 - 클라이언트
-server - Gamemode, 모든 컨트롤러, 모든 플레이어 스테이트,              값의 변경을 복제하여 알림
+server - Gamemode, 모든 컨트롤러, 모든 플레이어 스테이트,               값의 변경을 복제하여 알림
 client -           자신 컨트롤러, 모든 플레이어 스테이트, 자신 HUD/위젯, 값의 변경을 알리지 못함
+
+bReplicates
+Actor에 있으며 스폰하거나 할 경우 true로 변경해주어야 Client에도 나옴
 
 Lambda
 간단한 함수의 경우 이름을 따로 선언하지않고 .AddLambda([] () {}); 방식으로 생성가능함
 [this] (AAA* AAAPtr) { AAAptr->AAAFunc() } 이런 식으로 사용 가능하며 Lambda의 경우 클라스에 속하지 않는 임시 함수이기 때문에 []은 헤더같은 느낌으로 씀
+
+_Implementation
+선언에는 _Imp 를 작성하지않고 구현에만 작성할 수 있음
+C++에서와 블루프린트를 구분할 수도 있다는데 여기서는 Client에서 사용가능하게 작성함
+UFUNCTION(Client, Reliable)를 선언하고 Client~~~(); Client~~~_Implementation(){}을 사용함
+
+SplineComponent
+중간값을 부드럽게 연결하기 위한 컴포넌트
+Spline->AddSplinePoint()를 통해 위치를 추가한 후
+Tick에서 Spline->FindLocationClosestToWorldLocation(), FindDirectionClosest~~~하여 사용 가능함
+
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 AbilitySystemComponent
@@ -98,7 +112,7 @@ Widget Controller
 Object에서 상속받아 만든 클래스로 Widget에서 생성하며 PlayerController, PlayerState, AbilitySystemComponent, AttributeSet을 변수로 가짐
 그 후 필요한 기능을 구현하는 자식 클래스를 만들어서 구현함
 바인딩은 AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
-		    AttributeSet->GetHealthAttribute()).AddUObject(this, &UWidgetController::HealthChanged); //TODO: 나중에 변경할 가능성이 있음. GamePlay Effect
+		    AttributeSet->GetHealthAttribute()).AddUObject(this, &UWidgetController::HealthChanged); Attribute.AddLambda 도 가능
 처럼 하며 이를 통해   AttributeSet->GetHealthAttribute()로 가져온 값이 변할 때 HealthChanged가 실행되게 설정할 수 있음
 
 BeginOverlap, EndOverlap
@@ -138,3 +152,23 @@ DataAsset
 BlueprintFunctionLibrary
 BP에서 사용하기 위한 Library로 이를 상속받아 UFUNCTION() static 으로 구현하면 모든 블루프린트에서 사용가능한 함수가 만들어짐
 단 static이기에 매개변수로 UObject* WorldContextObject를 사용해야할 수도 있음
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+GameplayAbility
+서버에서 실행 후 클라이언트로 기능을 복제함
+
+에디터에서 Instancing Policy
+Instanced Per Actor 한번 생성 후 계속 유지, Instanced Per Execution 실행 마다 생성, Non Instanced 인스턴스 생성X static 같이 사용
+
+Net Execution Policy
+Local Only 로컬에서만, Local Predicted 로컬 활성 후 서버에서 활성, Server Only 서버에서만, Server Initiated 서버 실행 후 로컬로 이동
+
+Replication Policy, Server Respects Remote Ability Cancellation, Replicate Input Directly 는 사용X
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+에디터 - 프로젝트 세팅
+Input - EnhancedInputComponent 값을 변경해 상속받아서 사용 가능
+
+Navigation System - 클라이언트 측면 내비 허용 -> Client에서 길찾기 사용 가능
